@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Quiz Creator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+    .response {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Create a Quiz</h2>
+    <label for="numQuestions">Enter the number of questions:</label><br>
+    <input type="number" id="numQuestions" min="1" required><br><br>
+    <button type="button" onclick="generateQuizForm()">Generate Form</button>
+    
+    <form id="quizCreatorForm" style="margin-top: 20px; display: none;">
+      <div id="questionsContainer"></div>
+      <button type="button" onclick="createQuiz()">Create Quiz</button>
+    </form>
+
+    <div id="quizContainer" style="margin-top: 30px; display: none;">
+      <h2>Quiz</h2>
+      <div id="quizContent"></div>
+      <button type="button" onclick="checkAnswers()">Submit</button>
+      <div class="response" id="response"></div>
+    </div>
+  </div>
+
+  <script>
+    let correctAnswers = [];
+
+    function generateQuizForm() {
+      const numQuestions = document.getElementById('numQuestions').value;
+      if (!numQuestions || numQuestions <= 0) {
+        alert("Please enter a valid number of questions.");
+        return;
+      }
+
+      const questionsContainer = document.getElementById('questionsContainer');
+      questionsContainer.innerHTML = ''; // Clear existing form fields
+
+      for (let i = 1; i <= numQuestions; i++) {
+        const questionDiv = document.createElement('div');
+
+        const questionLabel = document.createElement('label');
+        questionLabel.textContent = `Enter your question ${i}:`;
+        questionDiv.appendChild(questionLabel);
+
+        const questionInput = document.createElement('input');
+        questionInput.type = 'text';
+        questionInput.id = `question${i}`;
+        questionInput.name = `question${i}`;
+        questionInput.style.width = '100%';
+        questionInput.required = true;
+        questionDiv.appendChild(questionInput);
+
+        for (let j = 1; j <= 4; j++) {
+          const optionLabel = document.createElement('label');
+          optionLabel.textContent = `Option ${j}:`;
+          questionDiv.appendChild(optionLabel);
+
+          const optionInput = document.createElement('input');
+          optionInput.type = 'text';
+          optionInput.id = `option${j}_${i}`;
+          optionInput.name = `option${j}_${i}`;
+          optionInput.required = true;
+          questionDiv.appendChild(optionInput);
+        }
+
+        const correctOptionLabel = document.createElement('label');
+        correctOptionLabel.textContent = "Correct Option (1, 2, 3, or 4):";
+        questionDiv.appendChild(correctOptionLabel);
+
+        const correctOptionInput = document.createElement('input');
+        correctOptionInput.type = 'number';
+        correctOptionInput.id = `correctOption${i}`;
+        correctOptionInput.name = `correctOption${i}`;
+        correctOptionInput.min = 1;
+        correctOptionInput.max = 4;
+        correctOptionInput.required = true;
+        questionDiv.appendChild(correctOptionInput);
+
+        questionsContainer.appendChild(questionDiv);
+      }
+
+      document.getElementById('quizCreatorForm').style.display = 'block';
+    }
+
+    function createQuiz() {
+      const numQuestions = document.getElementById('numQuestions').value;
+      const quizContent = document.getElementById('quizContent');
+      quizContent.innerHTML = ''; // Clear existing quiz content
+      correctAnswers = [];
+
+      for (let i = 1; i <= numQuestions; i++) {
+        const question = document.getElementById(`question${i}`).value;
+        const option1 = document.getElementById(`option1_${i}`).value;
+        const option2 = document.getElementById(`option2_${i}`).value;
+        const option3 = document.getElementById(`option3_${i}`).value;
+        const option4 = document.getElementById(`option4_${i}`).value;
+        const correctOption = document.getElementById(`correctOption${i}`).value;
+
+        if (!question || !option1 || !option2 || !option3 || !option4 || !correctOption) {
+          alert("Please fill out all fields for each question.");
+          return;
+        }
+
+        correctAnswers.push(correctOption);
+
+        const questionDiv = document.createElement('div');
+
+        const questionTitle = document.createElement('h3');
+        questionTitle.textContent = question;
+        questionDiv.appendChild(questionTitle);
+
+        for (let j = 1; j <= 4; j++) {
+          const optionRadio = document.createElement('input');
+          optionRadio.type = 'radio';
+          optionRadio.id = `q${i}_opt${j}`;
+          optionRadio.name = `answer${i}`;
+          optionRadio.value = j;
+
+          const optionLabel = document.createElement('label');
+          optionLabel.htmlFor = `q${i}_opt${j}`;
+          optionLabel.textContent = eval(`option${j}`);
+
+          questionDiv.appendChild(optionRadio);
+          questionDiv.appendChild(optionLabel);
+          questionDiv.appendChild(document.createElement('br'));
+        }
+
+        quizContent.appendChild(questionDiv);
+      }
+
+      document.getElementById('quizCreatorForm').style.display = 'none';
+      document.getElementById('quizContainer').style.display = 'block';
+    }
+
+    function checkAnswers() {
+      let score = 0;
+      const numQuestions = document.getElementById('numQuestions').value;
+
+      for (let i = 1; i <= numQuestions; i++) {
+        const answers = document.getElementsByName(`answer${i}`);
+        let selectedValue;
+        for (const answer of answers) {
+          if (answer.checked) {
+            selectedValue = answer.value;
+            break;
+          }
+        }
+
+        if (selectedValue === correctAnswers[i - 1]) {
+          score++;
+        }
+      }
+
+      const response = document.getElementById('response');
+      response.textContent = `You got ${score} out of ${numQuestions} correct!`;
+      response.style.color = score === numQuestions ? "green" : "red";
+    }
+  </script>
+</body>
+</html>
